@@ -16,7 +16,7 @@ namespace EgoSignalR
 
         private IEnumerable<BusInfo> _busInfos = new List<BusInfo>();
 
-        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(4);
+        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(30);
         private readonly Random _updateOrNotRandom = new Random();
 
         private Timer _timer;
