@@ -13,6 +13,10 @@ $(function () {
         console.log(data);
     };
 
+    egoHub.client.updateData = function (data) {
+        console.log(data);
+    };
+
 
     //$.connection.hub.logging = true;
     $.connection.hub.start().done(function () {
@@ -21,9 +25,14 @@ $(function () {
         //    chat.server.send($('#displayname').val(), $('#message').val());
         //    // Clear text box and reset focus for next comment. 
         //    $('#message').val('').focus();
-        var stopNo = 10986;
-        egoHub.server.getBusInfo(stopNo);
 
+
+
+        //var stopNo = 10986;
+        //egoHub.server.getBusInfo(stopNo);
+
+
+        egoHub.server.startPoint();
     });
 
 
