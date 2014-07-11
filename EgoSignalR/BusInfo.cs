@@ -7,5 +7,12 @@ namespace EgoSignalR
 {
     public class BusInfo
     {
+        public int LineNumber { get; set; }
+        public int StopNo { get; set; }
+
+        public BusInfo()
+        {
+
+        }
     }
 }

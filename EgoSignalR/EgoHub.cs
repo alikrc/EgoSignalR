@@ -13,6 +13,7 @@ using System.Net.Sockets;
 using System.Collections.Specialized;
 using System.Text;
 using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace EgoSignalR
 {
@@ -20,7 +21,7 @@ namespace EgoSignalR
     public class EgoHub : Hub
     {
         private Timer _timer;
-        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(15);
         private readonly Random _updateOrNotRandom = new Random();
 
         private async Task<DateTime> GetServerTime()
@@ -29,9 +30,9 @@ namespace EgoSignalR
             return time;
         }
 
-        public async Task BroadcastDataToCaller(object data = null)
+        private async Task BroadcastDataToCaller(BusInfo data)
         {
-            var res = await HttpRequest();
+            var res = await HttpRequest(data);
             await Clients.Caller.updateData(res);
         }
 
@@ -43,34 +44,45 @@ namespace EgoSignalR
 
         public void DoJob(object state)
         {
-            var data = HttpRequest();
-            BroadcastDataToCaller();
+            //var data = HttpRequest();
+            BusInfo data = new BusInfo();
+            data.LineNumber = 541;
+            data.StopNo = 10986;
+            BroadcastDataToCaller(data);
         }
 
-        private string GetMyIp()
+        private class IpModel
         {
-            IPHostEntry host;
-            string localIP = "?";
-            host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (IPAddress ip in host.AddressList)
+            public string Ip { get; set; }
+        }
+        private async Task<string> GetMyIp()
+        {
+            var result = "";
+            using (var client = new HttpClient())
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    localIP = ip.ToString();
-                }
+                var url = "http://hdsjsonip.appspot.com/?json";
+                var response = await client.GetAsync(url);
+
+                var json = await response.Content.ReadAsStringAsync();
+
+                var obj = JsonConvert.DeserializeObject(json, typeof(IpModel));
+
+                result = ((IpModel)obj).Ip;
             }
-            return localIP;
+            return result;
         }
 
-        public async Task<object> HttpRequest()
+        private async Task<object> HttpRequest(BusInfo data)
         {
-            var ajaxCID = GetMyIp();
+            var ajaxCID = await GetMyIp();
             var ajaxAPP = "OtobusNerede";
             var random = new Random();
-            var AjaxSid = HttpUtility.HtmlEncode(random.Next(1000000000,2147483647).ToString()+random.Next(0000000,9999999).ToString());
+
+            //28619711427013046
+            var AjaxSid = HttpUtility.HtmlEncode(random.Next(1000000000, 2147483647).ToString() + random.Next(0000000, 9999999).ToString());
 
             var url = "http://www.ego.gov.tr/mobil/mapToDo.asp";
-            url = url + "?AjaxSid=0." + 28619711427018046 + "&AjaxCid=" + HttpUtility.HtmlEncode(ajaxCID) + "&AjaxApp=" + HttpUtility.HtmlEncode(ajaxAPP) + "&AjaxLog=True";
+            url = url + "?AjaxSid=0." + AjaxSid + "&AjaxCid=" + HttpUtility.HtmlEncode(ajaxCID) + "&AjaxApp=" + HttpUtility.HtmlEncode(ajaxAPP) + "&AjaxLog=True";
 
             var c = "http://www.ego.gov.tr/mobil/mapToDo.asp?AjaxSid=0.28619711427018046&AjaxCid=82.222.207.100&AjaxApp=OtobusNerede&AjaxLog=True";
 
@@ -81,8 +93,8 @@ namespace EgoSignalR
                 var o = new Dictionary<string, string>();
                 o.Add("fnc", "DuraktanGeçecekOtobüsler");
                 o.Add("prm", "");
-                o.Add("hat", "541");
-                o.Add("durak", "10986");
+                o.Add("hat", data.LineNumber.ToString());
+                o.Add("durak", data.StopNo.ToString());
 
                 var content = new FormUrlEncodedContent(o);
 
