@@ -34,6 +34,9 @@ namespace EgoSignalR
         {
             var res = await HttpRequest(data);
             await Clients.Caller.updateData(res);
+
+            var ip = GetMyIp();
+            await Clients.Caller.updateData(ip);
         }
 
         public async Task StartPoint()
