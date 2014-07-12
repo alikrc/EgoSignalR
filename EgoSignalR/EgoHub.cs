@@ -38,7 +38,7 @@ namespace EgoSignalR
         private void BroadcastDataToCaller(BusInfo data)
         {
             var res = HttpRequest(data).Result;
-            Clients.All.updateData(res);
+            Clients.Caller.updateData(res);
 
 
         }
