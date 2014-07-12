@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net;
-using System.IO;
 using System.Web;
-using System.Net.Sockets;
-using System.Collections.Specialized;
-using System.Text;
 using System.Net.Http;
 using Newtonsoft.Json;
 
@@ -20,9 +13,21 @@ namespace EgoSignalR
     [HubName("egoHub")]
     public class EgoHub : Hub
     {
-        private Timer _timer;
+        private static Timer _timer;
         private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(15);
         private readonly Random _updateOrNotRandom = new Random();
+        private static IHubCallerConnectionContext<dynamic> ClientsOnMem;
+        private static BusInfo _data;
+
+        public EgoHub()
+        {
+            _data = new BusInfo();
+
+            //_timer = new Timer(DoJob, null, new TimeSpan(), _updateInterval);
+            SingletonTimer.Callback = this.DoJob;
+            _timer = SingletonTimer.GetTimer();
+
+        }
 
         private async Task<DateTime> GetServerTime()
         {
@@ -30,29 +35,39 @@ namespace EgoSignalR
             return time;
         }
 
-        private async Task BroadcastDataToCaller(BusInfo data)
+        private void BroadcastDataToCaller(BusInfo data)
         {
-            var res = await HttpRequest(data);
-            await Clients.Caller.updateData(res);
+            var res = HttpRequest(data).Result;
+            Clients.Caller.updateData(res);
 
-            var ip = GetMyIp();
-            await Clients.Caller.updateData(ip);
+
         }
 
-        public async Task StartPoint()
+        public async Task StartPoint(int lineNumber, int stopNo)
         {
-            _timer = new Timer(DoJob, null, new TimeSpan(), _updateInterval);
-            //await BroadcastDataToCaller();
+            _data.LineNumber = lineNumber;
+            _data.StopNo = stopNo;
+
         }
 
         public void DoJob(object state)
         {
-            //var data = HttpRequest();
-            BusInfo data = new BusInfo();
-            data.LineNumber = 541;
-            data.StopNo = 10986;
-            BroadcastDataToCaller(data);
+            //_data.LineNumber = 541;
+            //_data.StopNo = 10986;
+            //LoadPreviousData();
+
+            BroadcastDataToCaller(_data);
         }
+
+        //private void LoadPreviousData()
+        //{
+        //    var busData = HttpContext.Current.Session["BusData"];
+
+        //    if (busData != null)
+        //    {
+        //        _data = (BusInfo)busData;
+        //    }
+        //}
 
         private class IpModel
         {
@@ -87,7 +102,7 @@ namespace EgoSignalR
             var url = "http://www.ego.gov.tr/mobil/mapToDo.asp";
             url = url + "?AjaxSid=0." + AjaxSid + "&AjaxCid=" + HttpUtility.HtmlEncode(ajaxCID) + "&AjaxApp=" + HttpUtility.HtmlEncode(ajaxAPP) + "&AjaxLog=True";
 
-            var c = "http://www.ego.gov.tr/mobil/mapToDo.asp?AjaxSid=0.28619711427018046&AjaxCid=82.222.207.100&AjaxApp=OtobusNerede&AjaxLog=True";
+            //var c = "http://www.ego.gov.tr/mobil/mapToDo.asp?AjaxSid=0.28619711427018046&AjaxCid=82.222.207.100&AjaxApp=OtobusNerede&AjaxLog=True";
 
 
             var result = "";
@@ -214,15 +229,5 @@ namespace EgoSignalR
         //    Clients.Caller.updateBusInfo(data);
         //}
 
-
-
-
-
-    }
-
-    public enum ConnectionState
-    {
-        Closed,
-        Open
     }
 }

@@ -10,6 +10,11 @@ namespace EgoSignalR
         public int LineNumber { get; set; }
         public int StopNo { get; set; }
 
+        public BusInfo(int lineNo, int stopNo)
+        {
+            this.LineNumber = lineNo;
+            this.StopNo = StopNo;
+        }
         public BusInfo()
         {
 

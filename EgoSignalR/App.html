@@ -4,10 +4,12 @@
     <title></title>
 </head>
 <body>
+    <input id="txtLineNo" type="number" min="100" max="999" />
+    <input id="txtStopNo" type="number" min="10000" max="99999" />
+    <button type="button" id="btnSubmit">Tıkla!</button>
 
-
-
-
+    <div id="dvResult">
+    </div>
     <script src="/Scripts/jquery-2.1.1.min.js"></script>
     <script src="/Scripts/jquery.signalR-2.1.0.min.js"></script>
     <script src="/signalr/hubs"></script>

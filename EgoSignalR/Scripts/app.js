@@ -11,30 +11,53 @@ $(function () {
 
     egoHub.client.updateBusInfo = function (data) {
         console.log(data);
+        $("#dvResult").html(data);
     };
 
     egoHub.client.updateData = function (data) {
         console.log(data);
+        $("#dvResult").text(data);
     };
-
-
-    //$.connection.hub.logging = true;
-    $.connection.hub.start().done(function () {
-        //$('#sendmessage').click(function () {
-        //    // Call the Send method on the hub. 
-        //    chat.server.send($('#displayname').val(), $('#message').val());
-        //    // Clear text box and reset focus for next comment. 
-        //    $('#message').val('').focus();
+    $.connection.hub.logging = true;
+    $.connection.hub.start();
 
 
 
-        //var stopNo = 10986;
-        //egoHub.server.getBusInfo(stopNo);
+    $('#btnSubmit').click(function () {
 
+        var lineNumber = $("#txtLineNo").val();
+        var stopNo = $("#txtStopNo").val();
 
-        egoHub.server.startPoint();
+        //parse for int
+        lineNumber = parseInt(lineNumber);
+        stopNo = parseInt(stopNo);
+        console.log(lineNumber + " " + stopNo);
+
+        egoHub.server.startPoint(lineNumber, stopNo);
     });
+
+
+    ////
+    //$.connection.hub.start().done(function () {
+    //    //$('#sendmessage').click(function () {
+    //    //    // Call the Send method on the hub. 
+    //    //    chat.server.send($('#displayname').val(), $('#message').val());
+    //    //    // Clear text box and reset focus for next comment. 
+    //    //    $('#message').val('').focus();
+
+
+
+    //    //egoHub.server.getBusInfo(stopNo);
+
+    //    var lineNumber = 541;
+    //    var stopNo = 10986;
+    //    egoHub.server.startPoint(lineNumber, stopNo);
+    //});
 
 
 
 });
+
+function loadDefaultValues() {
+
+};
